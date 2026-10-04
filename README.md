@@ -1,6 +1,6 @@
 # Milestone 3: Data Processing Service (Design)
 
-**Student:** Ahmad Musleh (101042609)
+**Student:** Ahmad Musleh (101042609)  
 **Course:** SOFE4630U, Software Development Methods and Tools
 
 This repository contains the design part of Milestone 3. It adds a **Dataflow streaming job** between the smart meter producer and consumer from Milestone 1. The job reads every reading from Pub/Sub, removes the readings with a missing measurement, converts the units, and sends the result to another Pub/Sub topic.
@@ -80,7 +80,8 @@ flowchart LR
 ## Notes
 
 - **Credentials:** the organization policy of the account blocks service account key creation, so the producer and consumer run in Cloud Shell, where the default credentials of the logged-in account are used. If a service account key (`*.json`) is in the folder, the scripts use it instead. Keys are excluded by `.gitignore`.
-- **Expected result:** 22 of the 100 readings have a missing value, so the consumer receives 78 readings. This was checked by running the same stages locally with the DirectRunner on `Labels.csv`.
+- **Result:** 22 of the 100 readings have a missing value, so 78 readings reach the consumer. This was checked first by running the same stages locally with the DirectRunner on `Labels.csv`, and then on Dataflow, where the consumer received exactly 78 converted readings.
 - **Order:** the readings can arrive at the consumer in a different order, because the job processes them in parallel.
+- **Consumer counter:** the Pub/Sub client calls the callback from several threads at the same time. In the first test the printed counter was out of order, so the counter is now updated and printed under a lock.
 - **Start order:** the job creates its own subscription on the input topic when it starts, so the producer must be started after the job is running. Readings published before that are not received by the job.
 - **Cost:** `--max_num_workers 1` limits autoscaling to one worker, which is enough for this data rate.
